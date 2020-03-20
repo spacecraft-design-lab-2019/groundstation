@@ -8,23 +8,20 @@ import re
 import json
 import datetime
 import os
-import pyserial
 
-from satellite_translator.relay_telemetry import RelayTelemetry
+from demo.demo_telemetry import DemoTelemetry
 
 logger = logging.getLogger(__name__)
-
-serial = pyserial.Serial()
 
 
 class CommandCancelledError(Exception):
     """Raised when a command is cancelled to halt the progress of that command"""
 
 
-class NewSat:
+class DemoSat:
     def __init__(self, name="Space Oddity"):
         self.name = name
-        self.telemetry = RelayTelemetry(name=name)
+        self.telemetry = DemoTelemetry(name=name)
         self.file_list = []
         self.running_commands = {}
         self.force_cancel = True  # Forces all commands to be cancelled, regardless of run state.
