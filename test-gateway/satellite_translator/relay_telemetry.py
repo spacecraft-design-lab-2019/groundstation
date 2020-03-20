@@ -3,7 +3,7 @@ import random
 import asyncio
 
 
-class DemoTelemetry:
+class RelayTelemetry:
     def __init__(self, name):
         self.name = name
         self.alerted = False
