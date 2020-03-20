@@ -1,6 +1,6 @@
 # Overview
 
-This repository contains the initial efforts to create a ground station for the satellite. Currently it contains: 
+This repository contains the initial efforts to create a ground station for the satellite. Currently it contains two 'gateways' - one which is a basic test with no features to check out the system, the other one with more features that will hopefully remain a development version and change with the satellite. Each one contains: 
 - Code to simulate a satellite. 
 - A Python 'gateway' which communicates with major tom, a GUI/API service. 
 - Code to translate information from the radio inputs to the gateway. 
