@@ -9,7 +9,7 @@ import json
 import datetime
 import os
 
-from .demo_telemetry import DemoTelemetry
+from satellite_telemetry import SatelliteTelemetry
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class CommandCancelledError(Exception):
 class DemoSat:
     def __init__(self, name="Space Oddity"):
         self.name = name
-        self.telemetry = DemoTelemetry(name=name)
+        self.telemetry = SatelliteTelemetry(name=name)
         self.file_list = []
         self.running_commands = {}
         self.force_cancel = True  # Forces all commands to be cancelled, regardless of run state.
@@ -40,7 +40,7 @@ class DemoSat:
             },
             "spacecraft_error": {
                 "display_name": "Critical Event Command",
-                "description": "Causes a critical error on the Spacecraft.",
+                "description": "Used in DIL testing, creates critical error.",
                 "tags": ["testing"],
                 "fields": []
             },
@@ -66,26 +66,27 @@ class DemoSat:
                     {"name": "filename", "type": "string"}
                 ]
             },
-            "telemetry": {
-                "display_name": "Start Telemetry Beacon",
-                "description": "Commands the spacecraft to beacon Health and Status Telemetry",
+            "picture": {
+                "display_name": "Take a picture",
+                "description": "Commands the spacecraft to take a photo",
                 "tags": ["operations", "testing"],
+                "fields": []
+            },
+            "actuate": {
+                "display_name": "Actuate torquers",
+                "description": "Intakes a dipole moment and outputs a new orientation for the spacecraft.",
+                "tags": ["operations"],
                 "fields": [
-                    {"name": "mode", "type": "string", "range": ["NOMINAL", "ERROR"]},
-                    {"name": "duration", "type": "integer", "default": 300}
+                    {"name": "dipole", "type": "float"}
                 ]
             },
-            "connect": {
-                "display_name": "Establish RF Lock",
-                "description": "Points antennas and starts broadcasting carrier signal to establish RF lock with the spacecraft.",
-                "tags": ["operations"],
-                "fields": []
-            },
-            "safemode": {
-                "display_name": "Safemode Command",
-                "description": "Commands the spacecraft into safemode, shutting down all non-essential systems.",
+            "state": {
+                "display_name": "Changes spacecraft state",
+                "description": "Accepts state input and changes state of the spacecraft.",
                 "tags": ["operations", "testing"],
-                "fields": []
+                "fields": [
+                    {"name": "state", "type": "integer"}
+                ]
             }
         }
 
