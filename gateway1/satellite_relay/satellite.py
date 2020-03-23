@@ -9,7 +9,7 @@ import json
 import datetime
 import os
 
-from demo.demo_telemetry import DemoTelemetry
+from .demo_telemetry import DemoTelemetry
 
 logger = logging.getLogger(__name__)
 
