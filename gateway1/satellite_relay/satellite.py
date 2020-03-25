@@ -238,7 +238,7 @@ class Sat:
 
             elif command.type == "uplink_file":
                 """
-                Simulates uplinking a file by going through the whole progress bar scenario
+                Uplink a file!
                 """
                 self.check_cancelled(id=command.id, gateway=gateway)
                 asyncio.ensure_future(gateway.transmit_command_update(
@@ -288,6 +288,9 @@ class Sat:
                 await asyncio.sleep(3)
                 self.check_cancelled(id=command.id, gateway=gateway)
 
+                ser.write("Pls give file.")
+                file = ser.readline()  # eat the file
+
                 # Update command in Major Tom
                 await asyncio.sleep(2)
                 self.check_cancelled(id=command.id, gateway=gateway)
@@ -295,7 +298,7 @@ class Sat:
                     command_id=command.id,
                     state="processing_on_gateway",
                     dict={
-                        "status": f'File: "{api_filename}" Downlinked, Validating'
+                        "status": f'File: "{file}" Downlinked, Validating'
                     }
                 ))
                 await asyncio.sleep(3)
@@ -304,7 +307,7 @@ class Sat:
                     command_id=command.id,
                     state="processing_on_gateway",
                     dict={
-                        "status": f'"{api_filename}" is Valid, Uploading to Major Tom'
+                        "status": f'"{file}" is Valid, Uploading to Major Tom'
                     }
                 ))
 
@@ -312,18 +315,16 @@ class Sat:
                 self.check_cancelled(id=command.id, gateway=gateway)
                 try:
                     gateway.upload_downlinked_file(
-                        filename=image_filename,
-                        filepath=image_filename,  # Same as the name since we stored it locally
+                        filename=file,
+                        filepath=file,  # Same as the name since we stored it locally
                         system=self.name,
                         command_id=command.id,
-                        content_type=image_r.headers["Content-Type"],
-                        metadata=latest_image
                     )
                     await asyncio.sleep(2)
                     self.check_cancelled(id=command.id, gateway=gateway)
                     asyncio.ensure_future(gateway.complete_command(
                         command_id=command.id,
-                        output=f'"{image_filename}" successfully downlinked from Spacecraft and uploaded to Major Tom'
+                        output=f'"{file}" successfully downlinked from Spacecraft and uploaded to Major Tom'
                     ))
                 except RuntimeError as e:
                     asyncio.ensure_future(gateway.fail_command(command_id=command.id, errors=[
@@ -331,7 +332,7 @@ class Sat:
                                           f"Error: {traceback.format_exc()}"]))
 
                 # Remove file now that it's uploaded so we don't fill the disk.
-                os.remove(image_filename)
+                os.remove(file)
 
         except Exception as e:
             if type(e) == type(CommandCancelledError()):
