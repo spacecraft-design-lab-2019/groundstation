@@ -1,9 +1,10 @@
 # Overview
 
-This repository contains the initial efforts to create a ground station for the satellite. Currently it contains two 'gateways' - one which is a basic test with no features to check out the system, the other one with more features that will hopefully remain a development version and change with the satellite. Each one contains: 
-- Code to simulate a satellite. 
-- A Python 'gateway' which communicates with major tom, a GUI/API service. 
-- Code to translate information from the radio inputs to the gateway. 
+This repository contains the initial efforts to create a ground station for the satellite. Currently it contains two 'gateways', test-gateway and gateway1. 
+* test-gateway is a HOOTL test of Major Tom, making use of some development resources from Major Tom's creators. 
+* gateway1 is an attempt at a gateway that actually works with the radio. 
+
+Each gateway contains a top-level run file, a satellite class that handles commands, and a telemetry parser. They are designed to communicate over serial with a radio module. 
 
 The ultimate goal of the system is to create a simple and intiutive ground station service for talking to the satellite on orbit. 
 
