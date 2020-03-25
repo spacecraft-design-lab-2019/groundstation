@@ -172,19 +172,20 @@ class Sat:
                 """
                 Sends changes in satellite state to the satellite. 
                 """
+                state = command.fields["gateway_download_path"]
                 asyncio.ensure_future(gateway.transmit_command_update(
                     command_id=command.id,
                     state="transmitted_to_system",
                     dict={
                         "status": "Transmitted State Command",
-                        "payload": "0xFFFF"
+                        "payload": state
                     }
                 ))
                 await asyncio.sleep(3)
                 self.check_cancelled(id=command.id, gateway=gateway)
-                self.telemetry.safemode = True
-                await asyncio.sleep(3)
-                self.check_cancelled(id=command.id, gateway=gateway)
+                self.telemetry.state = True
+
+                ser.readline(state) # Is there a state change awk. bit? If so then can confirm here!
                 asyncio.ensure_future(gateway.complete_command(
                     command_id=command.id,
                     output="Spacecraft Confirmed Safemode"
@@ -323,45 +324,6 @@ class Sat:
                 ))
                 await asyncio.sleep(3)
                 self.check_cancelled(id=command.id, gateway=gateway)
-
-                # Get the latest image of the earth from epic cam
-                try:
-                    # Get the image info and download url
-                    url = "https://epic.gsfc.nasa.gov/api/natural"
-                    r = requests.get(url)
-                    if r.status_code != 200:
-                        raise(RuntimeError(f"File Download Failed. Status code: {r.status_code}"))
-
-                    # Retrieve necessary data from the response
-                    images = json.loads(r.content)
-                    latest_image = images[-1]
-                    for field in latest_image:
-                        logger.debug(f'{field}  :  {latest_image[field]}')
-                    image_date = datetime.datetime.strptime(
-                        latest_image["date"], "%Y-%m-%d %H:%M:%S")
-                    api_filename = latest_image["image"] + ".png"
-                    if command.fields["filename"] != "":
-                        image_filename = command.fields["filename"]
-                    else:
-                        image_filename = api_filename
-                    image_url = "https://epic.gsfc.nasa.gov/archive/natural" + \
-                        image_date.strftime("/%Y/%m/%d") + "/png/" + api_filename
-
-                    # Get the image itself
-                    self.check_cancelled(id=command.id, gateway=gateway)
-                    image_r = requests.get(image_url)
-                    if image_r.status_code != 200:
-                        raise(RuntimeError(
-                            f"File Download Failed. Status code: {image_r.status_code}"))
-
-                    # Write file to disk
-                    self.check_cancelled(id=command.id, gateway=gateway)
-                    with open(image_filename, "wb") as f:
-                        f.write(image_r.content)
-                    logger.info(f"Downloaded Image: {api_filename} as name {image_filename}")
-                except RuntimeError as e:
-                    asyncio.ensure_future(gateway.fail_command(command_id=command.id, errors=[
-                                          "File failed to download", f"Error: {traceback.format_exc()}"]))
 
                 # Update command in Major Tom
                 await asyncio.sleep(2)
