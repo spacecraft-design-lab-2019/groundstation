@@ -8,17 +8,20 @@ import re
 import json
 import datetime
 import os
+import serial
 
 from satellite_telemetry import SatelliteTelemetry
 
 logger = logging.getLogger(__name__)
+
+ser = serial.Serial('/dev/ttyUSB0') # Change this port as required depending on configuration.
 
 
 class CommandCancelledError(Exception):
     """Raised when a command is cancelled to halt the progress of that command"""
 
 
-class DemoSat:
+class Sat:
     def __init__(self, name="Space Oddity"):
         self.name = name
         self.telemetry = SatelliteTelemetry(name=name)
@@ -498,3 +501,6 @@ class DemoSat:
                     command_id=command.id, errors=[
                         "Command Failed to Execute. Unknown Error Occurred.", f"Error: {traceback.format_exc()}"]))
         self.running_commands.pop(str(command.id))
+
+    async def check_telemetry(self, id, gateway):
+        ser.read()

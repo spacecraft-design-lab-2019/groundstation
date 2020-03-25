@@ -3,7 +3,7 @@ import asyncio
 import time
 import argparse
 from majortom_gateway import GatewayAPI
-from demo.demo_sat import DemoSat
+from satellite import Sat
 
 logger = logging.getLogger(__name__)
 
@@ -50,16 +50,16 @@ else:
 logger.info("Starting up!")
 loop = asyncio.get_event_loop()
 
-logger.debug("Setting up Demo Satellite")
-demo_sat = DemoSat(name="Space Oddity")
+logger.debug("Setting up Satellite")
+sat = Sat(name="Pycubed-1")
 
 logger.debug("Setting up MajorTom")
 gateway = GatewayAPI(
     host=args.majortomhost,
     gateway_token=args.gatewaytoken,
     basic_auth=args.basicauth,
-    command_callback=demo_sat.command_callback,
-    cancel_callback=demo_sat.cancel_callback,
+    command_callback=sat.command_callback,
+    cancel_callback=sat.cancel_callback,
     http=args.http)
 
 logger.debug("Connecting to MajorTom")
@@ -67,8 +67,8 @@ asyncio.ensure_future(gateway.connect_with_retries())
 
 logger.debug("Sending Command Definitions")
 asyncio.ensure_future(gateway.update_command_definitions(
-    system=demo_sat.name,
-    definitions=demo_sat.definitions))
+    system=sat.name,
+    definitions=sat.definitions))
 
 logger.debug("Starting Event Loop")
 loop.run_forever()
