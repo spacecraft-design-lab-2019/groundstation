@@ -185,10 +185,55 @@ class Sat:
                 self.check_cancelled(id=command.id, gateway=gateway)
                 self.telemetry.state = True
 
-                ser.readline(state) # Is there a state change awk. bit? If so then can confirm here!
+                ser.write(state) # Is there a state change awk. bit? If so then can confirm here!
                 asyncio.ensure_future(gateway.complete_command(
                     command_id=command.id,
-                    output="Spacecraft Confirmed Safemode"
+                    output="Spacecraft Confirmed In State " + state
+                ))
+
+            elif command.type == "actuate":
+                """
+                Sends changes in satellite state to the satellite. 
+                """
+                dipole = command.fields["gateway_download_path"]
+                asyncio.ensure_future(gateway.transmit_command_update(
+                    command_id=command.id,
+                    state="transmitted_to_system",
+                    dict={
+                        "status": "Transmitted Actuate Command to " + dipole,
+                        "payload": dipole
+                    }
+                ))
+                await asyncio.sleep(3)
+                self.check_cancelled(id=command.id, gateway=gateway)
+                self.telemetry.state = True
+
+                ser.write(dipole) # Add the correct commanding format
+                asyncio.ensure_future(gateway.complete_command(
+                    command_id=command.id,
+                    output="Spacecraft Confirmed Dipole" + dipole
+                ))
+
+            elif command.type == "picture":
+                """
+                Sends changes in satellite state to the satellite. 
+                """
+                asyncio.ensure_future(gateway.transmit_command_update(
+                    command_id=command.id,
+                    state="transmitted_to_system",
+                    dict={
+                        "status": "Transmitted Picture Command",
+                    }
+                ))
+                await asyncio.sleep(3)
+                self.check_cancelled(id=command.id, gateway=gateway)
+                self.telemetry.state = True
+
+                ser.write("take picture") # add command name!
+
+                asyncio.ensure_future(gateway.complete_command(
+                    command_id=command.id,
+                    output="Spacecraft Confirmed Picture"
                 ))
 
             elif command.type == "uplink_file":
@@ -216,90 +261,10 @@ class Sat:
                 with open(filename, "wb") as f:
                     f.write(content)
 
-                # Delete file because we aren't actually doing anything with it.
-                os.remove(filename)
+                ser.write(filename) # Again, not sure if this is the right format for the radio yet - need info.
 
-                # Update Major Tom with progress as if we're uplinking the file to the spacecraft
-                await asyncio.sleep(2)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                asyncio.ensure_future(gateway.transmit_command_update(
-                    command_id=command.id,
-                    state="uplinking_to_system",
-                    dict={
-                        "status": "Transmitting File to Spacecraft",
-                        "progress_1_current": 10,
-                        "progress_1_max": 100,
-                        "progress_1_label": "Percent Transmitted",
-                        "progress_2_current": 0,
-                        "progress_2_max": 100,
-                        "progress_2_label": "Percent Acked"
-                    }
-                ))
-                await asyncio.sleep(2)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                asyncio.ensure_future(gateway.transmit_command_update(
-                    command_id=command.id,
-                    state="uplinking_to_system",
-                    dict={
-                        "status": "Transmitting File to Spacecraft",
-                        "progress_1_current": 30,
-                        "progress_2_current": 10
-                    }
-                ))
-                await asyncio.sleep(2)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                asyncio.ensure_future(gateway.transmit_command_update(
-                    command_id=command.id,
-                    state="uplinking_to_system",
-                    dict={
-                        "status": "Transmitting File to Spacecraft",
-                        "progress_1_current": 50,
-                        "progress_2_current": 30
-                    }
-                ))
-                await asyncio.sleep(2)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                asyncio.ensure_future(gateway.transmit_command_update(
-                    command_id=command.id,
-                    state="uplinking_to_system",
-                    dict={
-                        "status": "Transmitting File to Spacecraft",
-                        "progress_1_current": 70,
-                        "progress_2_current": 50
-                    }
-                ))
-                await asyncio.sleep(2)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                asyncio.ensure_future(gateway.transmit_command_update(
-                    command_id=command.id,
-                    state="uplinking_to_system",
-                    dict={
-                        "status": "Transmitting File to Spacecraft",
-                        "progress_1_current": 90,
-                        "progress_2_current": 70
-                    }
-                ))
-                await asyncio.sleep(2)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                asyncio.ensure_future(gateway.transmit_command_update(
-                    command_id=command.id,
-                    state="uplinking_to_system",
-                    dict={
-                        "status": "Transmitting File to Spacecraft",
-                        "progress_1_current": 100,
-                        "progress_2_current": 90
-                    }
-                ))
-                await asyncio.sleep(2)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                asyncio.ensure_future(gateway.transmit_command_update(
-                    command_id=command.id,
-                    state="uplinking_to_system",
-                    dict={
-                        "progress_1_current": 100,
-                        "progress_2_current": 100
-                    }
-                ))
+                # Need to add a specific approach to changing the code on the satellite remotely.
+
                 await asyncio.sleep(2)
                 self.check_cancelled(id=command.id, gateway=gateway)
                 asyncio.ensure_future(gateway.complete_command(
@@ -310,8 +275,6 @@ class Sat:
             elif command.type == "downlink_file":
                 """
                 "Downlinks" an image file and uploads it to Major Tom.
-                Ignores the filename argument, and always pulls the latest
-                image from NASA's Epic cam.
                 """
                 await asyncio.sleep(1)
                 self.check_cancelled(id=command.id, gateway=gateway)
