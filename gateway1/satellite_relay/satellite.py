@@ -41,12 +41,6 @@ class Sat:
                 "tags": ["testing"],
                 "fields": []
             },
-            "spacecraft_error": {
-                "display_name": "Critical Event Command",
-                "description": "Used in DIL testing, creates critical error.",
-                "tags": ["testing"],
-                "fields": []
-            },
             "update_file_list": {
                 "display_name": "Update File List",
                 "description": "Downlinks the latest file list from the spacecraft.",
@@ -126,79 +120,25 @@ class Sat:
         self.running_commands[str(command.id)] = {"cancel": False}
         try:
             if command.type == "ping":
-                asyncio.ensure_future(gateway.complete_command(
-                    command_id=command.id, output="pong"))
-
-            elif command.type == "connect":
-                """
-                Simulates achieving an RF Lock with the spacecraft.
-                """
-                await asyncio.sleep(2)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                asyncio.ensure_future(gateway.transmit_command_update(
-                    command_id=command.id,
-                    state="preparing_on_gateway",
-                    dict={"status": "Pointing Antennas"}
-                ))
-                await asyncio.sleep(4)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                asyncio.ensure_future(gateway.transmit_command_update(
-                    command_id=command.id,
-                    state="uplinking_to_system",
-                    dict={"status": "Broadcasting Acquisition Signal"}
-                ))
-                await asyncio.sleep(4)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                asyncio.ensure_future(gateway.transmit_command_update(
-                    command_id=command.id,
-                    state="acked_by_system",
-                    dict={"status": "Received acknowledgement from Spacecraft"}
-                ))
-                await asyncio.sleep(3)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                asyncio.ensure_future(gateway.complete_command(
-                    command_id=command.id,
-                    output="Link Established"
-                ))
-
-            elif command.type == "telemetry":
-                """
-                Begins telemetry beaconing. 2 modes: error and nominal
-                Error sends data with low battery voltage and low uptime counter
-                Nominal sends normal data that just varies slightly
-                """
-                self.telemetry.safemode = False
-                if type(command.fields['duration']) != type(int()):
-                    asyncio.ensure_future(gateway.fail_command(
-                        command_id=command.id, errors=[
-                            f"Duration type is invalid. Must be an int. Type: {type(command.fields['duration'])}"
-                        ]))
-                else:
-                    await asyncio.sleep(2)
-                    self.check_cancelled(id=command.id, gateway=gateway)
-                    if command.fields['mode'] == "ERROR":
-                        asyncio.ensure_future(self.telemetry.generate_telemetry(
-                            duration=command.fields['duration'], gateway=gateway, type="ERROR"))
-                    else:
-                        asyncio.ensure_future(self.telemetry.generate_telemetry(
-                            duration=command.fields['duration'], gateway=gateway, type="NOMINAL"))
-
-                    await asyncio.sleep(2)
-                    self.check_cancelled(id=command.id, gateway=gateway)
+                ser.write("send") # Add command text for ping here.
+                pong = ser.readline() # See if response
+                if "blah" in pong: # Fill in response for ping here.
                     asyncio.ensure_future(gateway.complete_command(
-                        command_id=command.id,
-                        output=f"Started Telemetry Beacon in mode: {command.fields['mode']} for {command.fields['duration']} seconds."))
+                        command_id=command.id, output="pong"))
 
             elif command.type == "update_file_list":
                 """
-                Sends a dummy file list to Major Tom.
+                Sends a file to Major Tom.
                 """
+                ser.write("") # Fill in relevant command here
+                ser.readline() # Fill in required size for a file. Adjust wait times etc.
                 for i in range(1, randint(2, 4)):
                     self.file_list.append({
                         "name": f'Payload-Image-{(len(self.file_list)+1):04d}.png',
-                        "size": randint(2000000, 3000000),
+                        "size": randint(2000000, 3000000), # fill in real file format later
                         "timestamp": int(time.time() * 1000) + i*10,
                         "metadata": {"type": "image", "lat": (randint(-89, 89) + .0001*randint(0, 9999)), "lng": (randint(-179, 179) + .0001*randint(0, 9999))}
+                        # Fill in real lat/long later!
                     })
 
                 self.check_cancelled(id=command.id, gateway=gateway)
@@ -213,7 +153,7 @@ class Sat:
 
             elif command.type == "error":
                 """
-                Always errors.
+                Always errors. USed for testing
                 """
                 self.check_cancelled(id=command.id, gateway=gateway)
                 asyncio.ensure_future(gateway.transmit_command_update(
@@ -228,41 +168,15 @@ class Sat:
                 asyncio.ensure_future(gateway.fail_command(
                     command_id=command.id, errors=["Command failed to execute."]))
 
-            elif command.type == "spacecraft_error":
+            elif command.type == "state":
                 """
-                Makes the Spacecraft generate a Critical error event.
-                """
-                asyncio.ensure_future(gateway.transmit_command_update(
-                    command_id=command.id,
-                    state="uplinking_to_system",
-                    dict={
-                        "status": "Uplinking Command"
-                    }
-                ))
-                await asyncio.sleep(1)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                event = {
-                    "system": self.name,
-                    "type": "CRITICAL ERROR",
-                    "level": "critical",
-                    "message": "A Critical Error Occurred!",
-                    "timestamp": int(time.time() * 1000)
-                }
-                asyncio.ensure_future(gateway.transmit_events(events=[event]))
-                await asyncio.sleep(1)
-                self.check_cancelled(id=command.id, gateway=gateway)
-                asyncio.ensure_future(gateway.fail_command(
-                    command_id=command.id, errors=["Command caused critical error"]))
-
-            elif command.type == "safemode":
-                """
-                Simulates uplinking a safemode command, and the satellite confirming.
+                Sends changes in satellite state to the satellite. 
                 """
                 asyncio.ensure_future(gateway.transmit_command_update(
                     command_id=command.id,
                     state="transmitted_to_system",
                     dict={
-                        "status": "Transmitted Safemode Command",
+                        "status": "Transmitted State Command",
                         "payload": "0xFFFF"
                     }
                 ))
