@@ -509,8 +509,10 @@ class Sat:
                 gateway we are talking to
                 (All this gets run in the event loop)
 
+        * To do: check to make sure that there are no senarios where read and write block each other.
+
         Option here to design in the telemetry handling schema -
         e.g. only running this code when the spacecraft is actively broadcasting."""
 
         packet = ser.readline()
-        SatelliteTelemetry.relay_telemetry(packet, gateway)
+        await SatelliteTelemetry.relay_telemetry(packet, gateway)
