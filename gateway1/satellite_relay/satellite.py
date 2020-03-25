@@ -488,7 +488,8 @@ class Sat:
                     ))
                 except RuntimeError as e:
                     asyncio.ensure_future(gateway.fail_command(command_id=command.id, errors=[
-                                          "Downlinked File failed to upload to Major Tom", f"Error: {traceback.format_exc()}"]))
+                                          "Downlinked File failed to upload to Major Tom",
+                                          f"Error: {traceback.format_exc()}"]))
 
                 # Remove file now that it's uploaded so we don't fill the disk.
                 os.remove(image_filename)
@@ -503,4 +504,13 @@ class Sat:
         self.running_commands.pop(str(command.id))
 
     async def check_telemetry(self, id, gateway):
-        ser.read()
+        """
+        Inputs: id of satellite
+                gateway we are talking to
+                (All this gets run in the event loop)
+
+        Option here to design in the telemetry handling schema -
+        e.g. only running this code when the spacecraft is actively broadcasting."""
+
+        packet = ser.readline()
+        SatelliteTelemetry.relay_telemetry(packet, gateway)

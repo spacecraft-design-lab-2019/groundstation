@@ -54,4 +54,27 @@ class SatelliteTelemetry:
 
         }
 
+    async def relay_telemetry(self, packet, gateway):
+
+            metrics = []
+            for subsystem in self.telemetry:
+                for metric in self.telemetry[subsystem]:
+                    metrics.append({
+                        "system": self.name,
+                        "subsystem": subsystem,
+                        "metric": metric,
+                        "value": self.telemetry[subsystem][metric]["value"],
+                        "timestamp": int(time.time() * 1000)
+                    })
+            metrics.append({
+                "system": self.name,
+                "subsystem": "obc",
+                "metric": "uptime",
+                "value": (time.time() - self.start_time),
+                "timestamp": int(time.time() * 1000)
+
+            })
+            asyncio.ensure_future(gateway.transmit_metrics(metrics=metrics))
+            await asyncio.sleep(1)
+
 
