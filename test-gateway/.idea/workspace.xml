@@ -1,16 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6b20acb6-c689-4069-9538-9ec3f2bc585b" name="Default Changelist" comment="" />
+    <list default="true" id="6b20acb6-c689-4069-9538-9ec3f2bc585b" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../gateway1/satellite_relay/satellite.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../gateway1/satellite_relay/satellite_telemetry.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway1/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../gateway1/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway1/satellite_relay/demo_sat.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway1/satellite_relay/demo_telemetry.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
   <component name="ProjectId" id="1Yam0zLfsEMsJ6egWWn3CT7lBsK" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/run.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunDashboard">
@@ -60,5 +71,16 @@
       <updated>1583188860077</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

@@ -1,1 +1,0 @@
-name = "satellite_translator"
